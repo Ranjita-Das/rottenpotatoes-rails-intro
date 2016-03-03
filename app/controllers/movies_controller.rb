@@ -11,7 +11,38 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
+   if params[:title_sort] == "selected"
+      session[:movie_highlight] = "hilite"
+      @movies = Movie.all.order(:title)
+      session[:date_highlight] = ""
+    elsif params[:date_sort] == "selected"
+      session[:date_highlight] = "hilite"
+      @movies = Movie.all.order(:release_date)
+      session[:movie_highlight] = ""
+    else
+      @movies = Movie.all
+    end
+    
+    if params[:ratings] != nil
+      session[:filtered_ratings] = params[:ratings]
+    end
+    
+    @all_ratings = Movie.select(:rating).uniq
+    if session[:filtered_ratings] == nil
+      session[:filtered_ratings] = Hash.new
+      @all_ratings.each do |x|
+        session[:filtered_ratings][x.rating] = 1
+      end
+    end
+    
+    @movies = @movies.where({rating: session[:filtered_ratings].keys})
+    if session[:movie_highlight] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil?
+      params[:title_sort] = "selected"
+    elsif session[:date_highlight] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil? 
+      params[:date_sort] = "selected"
+    elsif params[:ratings].nil? and session[:filtered_ratings]
+      params[:ratings] = session[:filtered_ratings]
+    end
   end
 
   def new
