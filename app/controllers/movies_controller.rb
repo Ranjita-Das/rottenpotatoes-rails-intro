@@ -11,37 +11,41 @@ class MoviesController < ApplicationController
   end
 
   def index
+    #sorting movies according to title
    if params[:title_sort] == "selected"
-      session[:movie_highlight] = "hilite"
+      session[:movie_chosen] = "hilite"
       @movies = Movie.all.order(:title)
-      session[:date_highlight] = ""
+      session[:date_chosen] = ""
+      
+    #sorting movies according to release date  
     elsif params[:date_sort] == "selected"
-      session[:date_highlight] = "hilite"
+      session[:date_chosen] = "hilite"
       @movies = Movie.all.order(:release_date)
-      session[:movie_highlight] = ""
+      session[:movie_chosen] = ""
     else
       @movies = Movie.all
     end
     
     if params[:ratings] != nil
-      session[:filtered_ratings] = params[:ratings]
+      session[:chosen_ratings] = params[:ratings]
     end
     
     @all_ratings = Movie.select(:rating).uniq
-    if session[:filtered_ratings] == nil
-      session[:filtered_ratings] = Hash.new
+    if session[:chosen_ratings] == nil
+      session[:chosen_ratings] = Hash.new
       @all_ratings.each do |x|
-        session[:filtered_ratings][x.rating] = 1
+        session[:chosen_ratings][x.rating] = 1
       end
     end
     
-    @movies = @movies.where({rating: session[:filtered_ratings].keys})
-    if session[:movie_highlight] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil?
+    @movies = @movies.where({rating: session[:chosen_ratings].keys})
+    if session[:movie_chosen] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil?
       params[:title_sort] = "selected"
-    elsif session[:date_highlight] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil? 
+    elsif session[:date_chosen] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil? 
       params[:date_sort] = "selected"
-    elsif params[:ratings].nil? and session[:filtered_ratings]
-      params[:ratings] = session[:filtered_ratings]
+    elsif params[:ratings].nil? and session[:chosen_ratings]
+      params[:ratings] = session[:chosen_ratings]
+      redirect_to movies_path(params)  #redirecting to list of movies
     end
   end
 
