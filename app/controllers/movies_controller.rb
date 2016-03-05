@@ -10,18 +10,26 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
+ 
+    
   def index
-    #sorting movies according to title
-   if params[:title_sort] == "selected"
-      session[:movie_chosen] = "hilite"
-      @movies = Movie.all.order(:title)
-      session[:date_chosen] = ""
       
-    #sorting movies according to release date  
-    elsif params[:date_sort] == "selected"
-      session[:date_chosen] = "hilite"
-      @movies = Movie.all.order(:release_date)
+    if params[:title_sort] == "selected"
+      session[:movie_chosen] = "hilite"
+      session[:date_chosen] = ""
+    end
+    
+    if params[:date_sort] == "selected"
+       session[:date_chosen] = "hilite"
       session[:movie_chosen] = ""
+    end
+    
+    #sorting according to title
+    if session[:movie_chosen] == "hilite"
+      @movies = Movie.all.order(:title)
+    #sorting according to release date
+    elsif session[:date_chosen] == "hilite"
+      @movies = Movie.all.order(:release_date)
     else
       @movies = Movie.all
     end
@@ -39,6 +47,7 @@ class MoviesController < ApplicationController
     end
     
     @movies = @movies.where({rating: session[:chosen_ratings].keys})
+    
     if session[:movie_chosen] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil?
       params[:title_sort] = "selected"
     elsif session[:date_chosen] == "hilite" and params[:title_sort].nil? and params[:date_sort].nil? 
